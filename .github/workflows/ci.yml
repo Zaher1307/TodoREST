@@ -17,7 +17,7 @@ jobs:
     - name: run unit tests
       run : |
         npm install
-        npm start
+        npm start &
         npm test
 
     - name: Build and push backend docker image
