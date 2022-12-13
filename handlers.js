@@ -1,4 +1,5 @@
 const db = require('./model');
+const jsonBody = require('body/json');
 
 function writeResponse(res, statusCode, body) {
     if (body) {
@@ -25,22 +26,34 @@ async function getHandler(endPoint, res) {
     }
 }
 
-async function postHandler(res, body) {
-    try {
-        let responseBody = await db.addTodoItem(body);
-        writeResponse(res, 200, JSON.stringify(responseBody));
-    } catch (err) {
-        writeResponse(res, 500);
-    }
+async function postHandler(req, res) {
+    jsonBody(req, res, async (err, body) => {
+        if (err) {
+            badRequestHandler(res);
+            return;
+        }
+        try {
+            let responseBody = await db.addTodoItem(body);
+            writeResponse(res, 200, JSON.stringify(responseBody));
+        } catch (err) {
+            writeResponse(res, 500);
+        }
+    });
 }
 
-async function patchHandler(res, body) {
-    try {
-        let responseBody = await db.updateTodoItem(body);
-        writeResponse(res, 200, JSON.stringify(responseBody));
-    } catch (err) {
-        writeResponse(res, 404);
-    }
+async function patchHandler(req, res) {
+    jsonBody(req, res, async (err, body) => {
+        if (err) {
+            badRequestHandler(res);
+            return;
+        }
+        try {
+            let responseBody = await db.updateTodoItem(body);
+            writeResponse(res, 200, JSON.stringify(responseBody));
+        } catch (err) {
+            writeResponse(res, 404);
+        }
+    });
 }
 
 async function deleteHandler(endPoint, res) {
@@ -56,11 +69,19 @@ async function deleteHandler(endPoint, res) {
     }
 }
 
+function badRequestHandler(res) {
+    writeResponse(res, 400);
+}
+
+function methodNotAllowedHandler(res) {
+    writeResponse(res, 405);
+}
 
 module.exports = {
     getHandler,
     postHandler,
     patchHandler,
     deleteHandler,
-    writeResponse
+    badRequestHandler,
+    methodNotAllowedHandler
 }
